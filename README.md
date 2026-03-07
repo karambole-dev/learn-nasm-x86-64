@@ -1,3 +1,12 @@
+## Assembleur, assembly, nasm, opcodes
+
+- L'assembly est un language
+- L'assembler c'est le programme qui va comprendre l'assembly et le convertir en opcode qui pourront etre lut par le CPU
+- Nasm est un assembler pour l'architecture intel x64
+
+![](img/schema1.png)
+
+
 ## Bonjour monde !
 Il était une fois le hello world (avant de commencer la théorie qui fait mal à la tête)
 
@@ -136,6 +145,15 @@ Le programme continue
     instruction suivante après syscall
 ```
 
+#### assembleur et linker
+```
+nasm -f elf64 coucou.asm ; le code qui est assemblé en opcodes
+
+ld coucou.o -o coucou ; permet de prendre plain de fichiers object et de les "lier" (linker) ensemble dans un seul programme executable
+
+./coucou ; on lance le programme
+```
+
 ## Les registres
 Registres : emplacement de mémoire processeur. La mémoire la plus rapide de l'ordinateur, mais aussi la plus couteuse à fabriquer en raison de la place limitée disponible dans le CPU.
 
@@ -248,9 +266,24 @@ nasm -f elf64 cmp.asm.asm ; ld cmp.asm.o -o cmp.asm ; ./cmp.asm
 echo $?
 0
 ```
+#### comment ça marche
+CMP fait une soustraction et met à jour les indicateurs du registre d’état :
+
+ZF (Zero Flag) : mis à 1 si les opérandes sont égaux.
+
+CF (Carry Flag) : mis à 1 si destination < source (entiers non signés).
+
+SF (Sign Flag) : mis à 1 si le résultat est négatif.
+
+OF (Overflow Flag) : mis à 1 en cas de débordement (entiers signés).
+
+PF (Parity Flag) : indique la parité du résultat.
+
+*Flag : un seul bit dans un registre (RFLAGS) qui indique un état.*
+
 
 ## Les boucles
-```
+```assembly
 section .text
     global _start
 
@@ -270,8 +303,8 @@ loop:
     syscall
 ```
 
-## Addition
-```
+## Calcule
+```assembly
 section .text
     global _start
 
@@ -285,11 +318,74 @@ _start:
 
 ## Premier projet display int
 
+*voir int_to_str pour le code en entier*
+
+Pseudo code :
 ```
 print(str(869))
 ```
 
-*voir int_to_str*
+On stock les données
+```assembly
+section .data
+    digit dd 869 ; le nombre qu'on veut afficher
+    digit_ascii_temp db 0 ; le buffer qui va contenir chaque chiffre un part un
+```
+
+```assembly
+while_digit_not_empty:
+    cmp byte [digit], 0 ; si digit est à 0 c'est qu'on à terminé de le parcourir
+    jbe init_loop ; on saute à init_loop qui va gérer l'affichage
+
+    mov eax, [digit] 
+    mov edx, 0
+    mov ebx, 10
+    div ebx ; rax=quotient / rdx=rest
+    ; l'instruction div va diviser eax par ebx et placer le quotient dans rax et le reste dans rdx
+    ; si on fait ça c'est pour récupérer le premier chiffre de digit qui est donc le reste
+
+    mov [digit], rax
+    ; on sauvegarde le quotient (la partie du nombre qui n'a pas était découpé) dans digit
+
+    add rdx, 48
+    mov [digit_ascii_temp], dl
+    ; on ajoute 48 au reste pour obtenir son numéro dans la table ascii
+
+    movzx rcx, byte [digit_ascii_temp]
+    push rcx
+    ; on pousse le resultat sur la pile
+    ; on peu pas directement afficher le caractère sinon ça ferait 968
+
+    jmp while_digit_not_empty
+
+```
+```assembly
+init_loop:
+    mov rbx, 4 ; comme le nombre fait 3 chiffre on va dépiler pour chacun d'entre eux
+
+display_digit:
+    dec rbx ; je commence par dec rbx ce qui est pas forcement logique et me force à rajouter +1 au compteur de la boucle par rapport à la taille réel du nombre
+    cmp rbx, 0
+    je exit
+
+    pop rcx
+    ; on met la valeur la plus haute de la pile dans rcx
+    mov [digit_ascii_temp], cl
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, digit_ascii_temp
+    mov rdx, 1
+    syscall
+
+    jmp display_digit
+
+```
+
+## Les différentes section
+
+.data : ?
+.bss : ?
+.text : ?
 
 ## Notes pas classé 
 
@@ -300,5 +396,3 @@ r11
 
 Si jamais on peu les empiler avant le syscall
 ```
-
-
