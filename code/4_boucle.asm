@@ -3,7 +3,6 @@ section .text
 
 _start:
     mov rcx, 5
-    ; à quelle moment on appelle loop ?
 
 loop:
     dec rcx

@@ -249,6 +249,48 @@ echo $?
 0
 ```
 
+## Les boucles
+```
+section .text
+    global _start
+
+_start:
+    mov rcx, 5
+
+loop:
+    dec rcx
+    cmp rcx, 0
+
+    ; ici faire quelque chose
+
+    jne loop
+
+    mov rax, 60
+    xor rdi, rdi
+    syscall
+```
+
+## Addition
+```
+section .text
+    global _start
+
+_start:
+    mov al, 5 ;
+    mov bl, 7
+    add al, bl
+
+    exit
+```
+
+## Premier projet display int
+
+```
+print(str(869))
+```
+
+*voir int_to_str*
+
 ## Notes pas classé 
 
 Les registres détruits par syscall :
