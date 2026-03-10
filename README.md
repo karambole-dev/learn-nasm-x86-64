@@ -396,3 +396,12 @@ r11
 
 Si jamais on peu les empiler avant le syscall
 ```
+
+## Docs
+comment marche le kernel et donc les syscalls : https://wiki.osdev.org/Expanded_Main_Page
+
+documentation sur les instructions elles-même : https://www.felixcloutier.com/x86/
+
+https://blog.rchapman.org/posts/Linux_System_Call_Table_for_x86_64/
+
+https://cs.lmu.edu/~ray/notes/nasmtutorial/
