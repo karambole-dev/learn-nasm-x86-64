@@ -5,7 +5,8 @@ section .data
     fd dq 0
 
 section .bss
-    buffer resb 4096
+    temp resb 3
+    buffer resb 24
 
 section .text
     global _start
@@ -23,34 +24,37 @@ reading_new_key:
     mov rax, 0 ; read
     mov rdi, [fd]
     mov rsi, buffer
-    mov rdx, 4096
+    mov rdx, 24
     syscall
-    mov r8, rax
+    ; mov r8, rax
 
-    ; if we need to display the key
-    ; mov rax, 1 ; write
-    ; mov rdi, 1
-    ; mov rsi, buffer
-    ; mov rdx, r8
-    ; syscall
+    ; type
+    ; mov ax, [buffer + 16]
+    ; code
+    ; mov bx, [buffer + 18]
+    ; value
+    ; mov ecx, [buffer + 20]
 
-    jmp save_new_key
+    mov ax, [buffer + 16] ; type
+    cmp ax, 1             ; ev_key
+    jne reading_new_key
 
-save_new_key:
-    mov rax, 2 ; sys_open()
-    mov rdi, key_log
-    mov rsi, 2 | 64 | 1024  ; O_WRONLY | O_CREAT | O_APPEND
-    mov rdx, 0777o        ; Permissions
-    syscall
+    mov eax, [buffer + 20]  ; value
+    cmp eax, 1              ; press
+    jne reading_new_key
 
-    mov rax, 1 ; sys_write()
-    mov rdi, rbx
-    mov rsi, buffer
-    mov rdx, r8
-    syscall
-
-    mov rax, 3 ; sys_close()
-    mov rdi, rbx
+    movzx rax, word [buffer + 18] ; code
+    mov rbx, 10
+    xor rdx, rdx
+    div rbx                        ; rax = quotient, rdx = reste
+    add al, '0'                     ; quotient → ASCII
+    add dl, '0'                     ; reste → ASCII
+    mov [temp], al
+    mov [temp+1], dl
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, temp
+    mov rdx, 3
     syscall
 
     jmp reading_new_key
@@ -64,4 +68,4 @@ exit:
     xor rdi, rdi
     syscall
 
-; nasm -f elf64 afficher_fichier.asm ; ld afficher_fichier.o -o afficher_fichier ; ./afficher_fichier
+; nasm -f elf64 read_event.asm ; ld read_event.o -o read_event ; ./read_event
