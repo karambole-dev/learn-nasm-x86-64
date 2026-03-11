@@ -27,7 +27,7 @@ reading_new_key:
     mov rdx, INPUT_EVENT_SIZE
     syscall
 
-    ; Filter only “key pressed” events
+    ; filter only “key pressed” events
     mov ax, [buffer + 16] ; type = ev_key
     cmp ax, 1
     jne reading_new_key
@@ -35,7 +35,7 @@ reading_new_key:
     cmp eax, 1
     jne reading_new_key
 
-    ; Get the keycode
+    ; get the keycode
     movzx rax, word [buffer + 18] ; code
     mov rbx, 10
     xor rdx, rdx
@@ -45,7 +45,7 @@ reading_new_key:
     mov [key_temp], al
     mov [key_temp+1], dl
     
-    ; If we want to display the key uncomment
+    ; if we want to display the key uncomment
     ; mov rax, 1
     ; mov rdi, 1
     ; mov rsi, key_temp
