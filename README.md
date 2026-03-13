@@ -387,6 +387,28 @@ display_digit:
 .bss : ?
 .text : ?
 
+## Label
+```
+yolo:
+    dw 0x1234 ; define word 2 bytes
+    dw 0x5678
+```
+
+yolo est un label contenant l’adresse mémoire du premier octet qui suit.
+```
+yolo = 0x401000
+
+adresse      contenu
+0x401000     34 12
+0x401002     78 56
+```
+```
+mov rdx, yolo
+rdx = 0x401000
+```
+
+Cela peut être utile pour des syscall complexes qui contienne beaucoup d'arguements.
+
 ## Notes pas classé 
 
 Les registres détruits par syscall :
