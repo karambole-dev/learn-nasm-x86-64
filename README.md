@@ -409,6 +409,8 @@ rdx = 0x401000
 
 Cela peut être utile pour des syscall complexes qui contienne beaucoup d'arguements.
 
+## Little endian et big endian
+
 ## Notes pas classé 
 
 Les registres détruits par syscall :
